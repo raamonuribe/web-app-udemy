@@ -1,10 +1,12 @@
 package com.ramon.mobileappws.service.impl;
 
+import com.ramon.mobileappws.exceptions.UserServiceException;
 import com.ramon.mobileappws.io.entity.UserEntity;
 import com.ramon.mobileappws.io.repository.UserRepository;
 import com.ramon.mobileappws.service.UserService;
 import com.ramon.mobileappws.shared.Utils;
 import com.ramon.mobileappws.shared.dto.UserDto;
+import com.ramon.mobileappws.ui.model.response.ErrorMessages;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.User;
@@ -31,20 +33,20 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto getUserByUserId(String userId) {
-        UserDto userDto = new UserDto();
+        UserDto returnValue = new UserDto();
 
         UserEntity userEntity = userRepository.findByUserId(userId);
         if (userEntity == null) throw new UsernameNotFoundException(userId);
 
-        BeanUtils.copyProperties(userEntity, userDto);
+        BeanUtils.copyProperties(userEntity, returnValue);
 
-        return userDto;
+        return returnValue;
     }
 
     @Override
     public UserDto createUser(UserDto userDto) {
         // Checks if Email already used
-        if (userRepository.findByEmail(userDto.getEmail()) != null) throw new RuntimeException("Email already in use.");
+        if (userRepository.findByEmail(userDto.getEmail()) != null) throw new UserServiceException(ErrorMessages.RECORD_ALREADY_EXISTS.getErrorMessage());
         // basic properties being mapped to user entity
         UserEntity userEntity = new UserEntity();
 
@@ -68,6 +70,27 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public UserDto updateUser(String userId, UserDto userDto) {
+        UserDto returnValue = new UserDto();
+
+        UserEntity userEntity = userRepository.findByUserId(userId);
+        if (userEntity == null) throw new UsernameNotFoundException(userId);
+        // Updating details
+        userEntity.setFirstName(userDto.getFirstName());
+        userEntity.setLastName(userDto.getLastName());
+
+        // Saving details
+        UserEntity updatedUserDetails = userRepository.save(userEntity);
+
+        // Returning DTO with updated details
+        BeanUtils.copyProperties(updatedUserDetails, returnValue);
+
+        return returnValue;
+    }
+
+    // Methods Used for security below
+
+    @Override
     public UserDto getUserByEmail(String email) {
         UserEntity userEntity = userRepository.findByEmail(email);
         if (userEntity == null) throw new UsernameNotFoundException(email);
@@ -79,7 +102,7 @@ public class UserServiceImpl implements UserService {
 
     }
 
-    // Method below comes from spring security
+    // Method below comes directly from spring security UserDetails Class
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
