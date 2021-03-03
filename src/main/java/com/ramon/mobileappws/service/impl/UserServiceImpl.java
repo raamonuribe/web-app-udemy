@@ -9,6 +9,9 @@ import com.ramon.mobileappws.shared.dto.UserDto;
 import com.ramon.mobileappws.ui.model.response.ErrorMessages;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -16,6 +19,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -97,6 +102,30 @@ public class UserServiceImpl implements UserService {
         // Deleting user
         userRepository.delete(userEntity);
 
+    }
+
+    @Override
+    public List<UserDto> getUsers(int page, int limit) {
+        List<UserDto> returnValue;
+
+        // Logic to have pagination start at 1 instead of 0
+        if (page > 0) page-=1;
+
+        // Creating a pageable to define page and page size
+        Pageable pageableRequest = PageRequest.of(page, limit);
+
+        // Getting list of users from Page of users
+        Page<UserEntity> usersPage = userRepository.findAll(pageableRequest);
+        List<UserEntity> users = usersPage.getContent();
+
+        // Using streams to map list of UserEntity to  list of UserDto
+        returnValue = users.stream().map(temp -> {
+            UserDto user = new UserDto();
+            BeanUtils.copyProperties(temp, user);
+            return user;
+        }).collect(Collectors.toList());
+
+        return returnValue;
     }
 
     // Methods Used for security below //

@@ -9,6 +9,9 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @RestController
 @RequestMapping("/users")
 public class UserController {
@@ -18,6 +21,23 @@ public class UserController {
     @Autowired
     public UserController(UserService userService) {
         this.userService = userService;
+    }
+
+    @GetMapping
+    public List<UserRest> getUsers(@RequestParam(value = "page", defaultValue = "1") int page,
+                                   @RequestParam(value = "limit", defaultValue = "25") int limit) {
+        List<UserRest> returnValue;
+
+        List<UserDto> users = userService.getUsers(page, limit);
+
+        // Using streams to map list of userDto to list of userRest objs
+        returnValue = users.stream().map(temp -> {
+            UserRest user = new UserRest();
+            BeanUtils.copyProperties(temp, user);
+            return user;
+        }).collect(Collectors.toList());
+
+        return returnValue;
     }
 
     @GetMapping("/{userId}")
@@ -30,7 +50,7 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public UserRest createUser(@RequestBody UserDetailsRequestModel userDetails) throws Exception {
+    public UserRest createUser(@RequestBody UserDetailsRequestModel userDetails) {
         UserRest returnValue = new UserRest();
 
         if (userDetails.getEmail().isEmpty()) throw new UserServiceException(ErrorMessages.MISSING_REQUIRED_FIELD.getErrorMessage());
@@ -67,4 +87,5 @@ public class UserController {
 
         return returnValue;
     }
+
 }
