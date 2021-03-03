@@ -25,7 +25,7 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable().authorizeRequests()
             .antMatchers(HttpMethod.POST, SecurityConstants.SIGN_UP_URL).permitAll()
-            // Allowing access to h2-console (Remove later)
+            // Allowing access to h2-console (Remove in production)
             .antMatchers("/h2-console/**").permitAll()
             .anyRequest().authenticated()
             .and()
@@ -33,6 +33,8 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
             .addFilter(new AuthorizationFilter(authenticationManager()))
             // Disables Sessions
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+        // Allowing access to in memory db in /h2-console
+        http.headers().frameOptions().disable();
     }
 
     @Override

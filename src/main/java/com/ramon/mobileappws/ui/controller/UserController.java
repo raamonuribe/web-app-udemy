@@ -4,8 +4,7 @@ import com.ramon.mobileappws.exceptions.UserServiceException;
 import com.ramon.mobileappws.service.UserService;
 import com.ramon.mobileappws.shared.dto.UserDto;
 import com.ramon.mobileappws.ui.model.request.UserDetailsRequestModel;
-import com.ramon.mobileappws.ui.model.response.ErrorMessages;
-import com.ramon.mobileappws.ui.model.response.UserRest;
+import com.ramon.mobileappws.ui.model.response.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -25,7 +24,7 @@ public class UserController {
     public UserRest getUser(@PathVariable String userId) {
         UserRest returnValue = new UserRest();
 
-        UserDto userDto = userService.getUserByUserId(userId);
+        UserDto userDto = userService.getUser(userId);
         BeanUtils.copyProperties(userDto, returnValue);
         return returnValue;
     }
@@ -58,8 +57,14 @@ public class UserController {
         BeanUtils.copyProperties(updatedUser, returnValue);
         return returnValue;
     }
-    @DeleteMapping
-    public String deleteUser() {
-        return "Delete User was called";
+    @DeleteMapping("/{userId}")
+    public OperationStatusModel deleteUser(@PathVariable String userId) {
+        OperationStatusModel returnValue = new OperationStatusModel();
+        returnValue.setOperationName(RequestOperationName.DELETE.name());
+
+        userService.deleteUser(userId);
+        returnValue.setOperationResult(RequestOperationStatus.SUCCESS.name());
+
+        return returnValue;
     }
 }
