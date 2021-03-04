@@ -5,6 +5,7 @@ import com.ramon.mobileappws.service.UserService;
 import com.ramon.mobileappws.shared.dto.UserDto;
 import com.ramon.mobileappws.ui.model.request.UserDetailsRequestModel;
 import com.ramon.mobileappws.ui.model.response.*;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -45,7 +46,9 @@ public class UserController {
         UserRest returnValue = new UserRest();
 
         UserDto userDto = userService.getUser(userId);
-        BeanUtils.copyProperties(userDto, returnValue);
+//        BeanUtils.copyProperties(userDto, return
+        ModelMapper modelMapper = new ModelMapper();
+        returnValue = modelMapper.map(userDto, UserRest.class);
         return returnValue;
     }
 
@@ -55,11 +58,15 @@ public class UserController {
 
         if (userDetails.getEmail().isEmpty()) throw new UserServiceException(ErrorMessages.MISSING_REQUIRED_FIELD.getErrorMessage());
 
-        UserDto userDto = new UserDto();
-        BeanUtils.copyProperties(userDetails, userDto);
+//        UserDto userDto = new UserDto();
+//        BeanUtils.copyProperties(userDetails, userDto);
+        // Same thing but modelMapper has more features that are needed for this project
+        ModelMapper modelMapper = new ModelMapper();
+        UserDto userDto = modelMapper.map(userDetails, UserDto.class);
 
         UserDto createdUser = userService.createUser(userDto);
-        BeanUtils.copyProperties(createdUser, returnValue);
+        returnValue = modelMapper.map(createdUser, UserRest.class);
+
         return returnValue;
     }
 
@@ -74,7 +81,10 @@ public class UserController {
         BeanUtils.copyProperties(userDetails, userDto);
 
         UserDto updatedUser = userService.updateUser(userId, userDto);
-        BeanUtils.copyProperties(updatedUser, returnValue);
+//        BeanUtils.copyProperties(updatedUser, returnValue);
+        ModelMapper modelMapper = new ModelMapper();
+        returnValue = modelMapper.map(updatedUser, UserRest.class);
+
         return returnValue;
     }
     @DeleteMapping("/{userId}")
