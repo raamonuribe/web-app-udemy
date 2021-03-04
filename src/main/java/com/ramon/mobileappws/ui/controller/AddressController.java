@@ -42,10 +42,22 @@ public class AddressController {
         // Remember to check if list is empty //
 
         // How to map lists using model mapper
-        Type listType = new TypeToken<List<AddressDto>>() {}.getType();
+        Type listType = new TypeToken<List<AddressRest>>() {}.getType();
         returnValue = modelMapper.map(addresses, listType);
 
         return returnValue;
 
+    }
+
+    @GetMapping(path = "/users/{userId}/addresses/{addressId}")
+    public AddressRest getUserAddress(@PathVariable String addressId) {
+        AddressRest returnValue = new AddressRest();
+
+        AddressDto address = addressService.getAddress(addressId);
+
+        ModelMapper modelMapper = new ModelMapper();
+        returnValue = modelMapper.map(address, AddressRest.class);
+
+        return returnValue;
     }
 }
