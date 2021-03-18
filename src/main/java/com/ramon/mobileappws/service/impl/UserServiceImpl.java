@@ -55,6 +55,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+
     public UserDto createUser(UserDto userDto) {
         // Checks if Email already used
         if (userRepository.findByEmail(userDto.getEmail()) != null) throw new UserServiceException(ErrorMessages.RECORD_ALREADY_EXISTS.getErrorMessage());
