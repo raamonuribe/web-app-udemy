@@ -8,6 +8,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -44,5 +45,18 @@ class UserServiceImplTest {
         assertNotNull(userDto);
         assertEquals("Lelouch", userDto.getFirstName());
         assertNotEquals("vi Britannia", userDto.getLastName());
+    }
+
+    @Test
+    void testGetUser_throwUsernameNotFoundException() {
+        when(userRepository.findByUserId(anyString())).thenReturn(null);
+
+
+        // Test
+        assertThrows(UsernameNotFoundException.class,
+                    () -> {
+                        userService.getUser("test@test.com");
+                    }
+                );
     }
 }
